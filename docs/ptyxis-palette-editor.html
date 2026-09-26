@@ -68,7 +68,7 @@
   .panel h2 span.accent { color: var(--accent); text-transform: none; letter-spacing: 0; }
 
   /* --- preview (left, dominant) --- */
-  .term { border: 1px solid var(--line); border-radius: 7px; overflow: hidden; max-width: 780px; position: relative; }
+  .term { border: 1px solid var(--line); border-radius: 7px; overflow: hidden; width: 100%; position: relative; }
   .term-titlebar { padding: 9px 14px; font-size: 12px; display: flex; align-items: center; gap: 8px; }
   .term-body { padding: 22px; min-height: 300px; font-size: 13.5px; }
   .term-body .line { white-space: pre; margin: 0 0 6px; }
@@ -145,7 +145,7 @@
 <div class="wrap">
   <div class="meta-row">
     <label>Name</label>
-    <input type="text" id="paletteName" value="My Custom Palette">
+    <input type="text" id="paletteName" value="">
     <button type="button" id="btnRerollName" class="btn" title="Generate a random name">🎲</button>
     <label class="checkbox-label"><input type="checkbox" id="dualToggle"> Dual scheme (Light + Dark)</label>
     <label class="checkbox-label"><input type="checkbox" id="primaryToggle"> Primary</label>
@@ -240,7 +240,7 @@ function defaultScheme(light) {
 function defaultOptional() { const o = {}; OPTIONAL_KEYS.forEach(k => o[k] = { auto: true, value: "#888888" }); return o; }
 function freshState() {
   return {
-    name: "My Custom Palette", primary: false, useSystemAccent: false, dual: false, activeScheme: "dark", activeKey: "Foreground",
+    name: generatePaletteName(), primary: false, useSystemAccent: false, dual: false, activeScheme: "dark", activeKey: "Foreground",
     schemes: {
       single: { colors: defaultScheme(false), opt: defaultOptional() },
       light: { colors: defaultScheme(true), opt: defaultOptional() },
@@ -248,13 +248,6 @@ function freshState() {
     }
   };
 }
-let state = freshState();
-
-// --- multi-palette store ---
-const STORE_KEY = 'ptyxis-palette-store', LEGACY_KEY = 'ptyxis-palette-editor-state';
-let store = { palettes: {}, order: [], activeId: null };
-function makeId() { return 'p' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
-function escapeHtml(s) { return String(s).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch])); }
 const NAME_ATTRS = ['Gentle','Amber','Velvet','Rusted','Feral','Quiet','Neon','Hollow','Dusky','Cobalt','Ember','Frosted','Wild','Molten','Faded','Electric','Muted','Slate','Coral','Midnight','Sunbleached','Ashen','Vivid','Jaded','Salted','Copper','Ghostly','Wistful','Smoky','Bruised','Waxen','Feverish','Bleached','Iron','Sodden','Static','Umber','Pale','Charred','Lucid','Brackish','Glacial','Rancid','Bright','Weathered','Restless','Stark','Balmy','Tarnished','Radiant','Withered','Marbled','Gilded','Somber','Threadbare','Luminous','Sepia','Brittle','Molting','Waning','Sultry','Wan','Feathered','Scorched','Curdled','Placid','Lurid','Sallow','Peeling','Overcast','Drowsy','Gaunt','Livid','Mossy','Blistered','Sable','Nascent','Errant','Fossil','Fugitive','Torpid','Splintered','Riotous','Dappled','Chalky','Lambent','Craven','Vaporous','Sundry','Fretful','Cindered','Loitering','Barbed','Wistless','Nebulous','Sun-warped','Cratered','Frayed','Undertow','Blushing','Grimy','Perilous','Serrated','Molten-eyed','Static-charged','Wayward','Hazy','Corroded','Guttering','Sooted','Bristling','Threaded'];
 const NAME_BEASTS = ['Fox','Owl','Wolf','Heron','Lynx','Raven','Otter','Falcon','Badger','Moth','Stag','Hare','Crow','Viper','Bison','Sparrow','Newt','Marten','Kestrel','Jackal','Mantis','Wren','Boar','Coyote','Ferret','Magpie','Pike','Weasel','Toad','Vulture','Osprey','Ibis','Shrike','Gecko','Bat','Hawk','Skink','Loon','Grackle','Possum','Tern','Cricket','Egret','Salamander','Puffin','Mink','Cormorant','Beetle','Jay','Lemur','Mole','Vole','Rook','Jackdaw','Peafowl','Dingo','Tapir','Caracal','Serval','Civet','Pangolin','Wolverine','Stoat','Bittern','Nighthawk','Curlew','Petrel','Guillemot','Lapwing','Kinglet','Warbler','Bushtit','Nuthatch','Grebe','Merganser','Fisher','Coati','Peccary','Ocelot','Margay','Genet','Mongoose','Aardwolf','Hyrax','Dhole','Quoll','Bandicoot','Numbat','Echidna','Wallaby','Coypu','Muskrat','Vixen','Kite','Harrier','Vixenling'];
 function generatePaletteName() {
@@ -262,6 +255,14 @@ function generatePaletteName() {
   const b = NAME_BEASTS[Math.floor(Math.random()*NAME_BEASTS.length)];
   return `${a} ${b}`;
 }
+
+let state = freshState();
+
+// --- multi-palette store ---
+const STORE_KEY = 'ptyxis-palette-store', LEGACY_KEY = 'ptyxis-palette-editor-state';
+let store = { palettes: {}, order: [], activeId: null };
+function makeId() { return 'p' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+function escapeHtml(s) { return String(s).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch])); }
 function uniqueName(base) {
   const names = new Set(store.order.map(id => store.palettes[id].name));
   if (!names.has(base)) return base;
